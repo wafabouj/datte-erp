@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const workCentersRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 const workCenterSchema = z.object({
   code: z.string().min(1),
@@ -28,6 +30,7 @@ workCentersRouter.get(
 
 workCentersRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = workCenterSchema.parse(req.body);
     const center = await prisma.workCenter.create({ data });
@@ -37,6 +40,7 @@ workCentersRouter.post(
 
 workCentersRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = workCenterSchema.partial().parse(req.body);
     const center = await prisma.workCenter.update({ where: { id: req.params.id }, data });
@@ -46,6 +50,7 @@ workCentersRouter.put(
 
 workCentersRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.workCenter.update({ where: { id: req.params.id }, data: { isActive: false } });
     res.status(204).end();

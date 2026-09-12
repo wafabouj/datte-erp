@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const uomRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 const uomSchema = z.object({
   code: z.string().min(1),
@@ -20,6 +22,7 @@ uomRouter.get(
 
 uomRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = uomSchema.parse(req.body);
     const uom = await prisma.unitOfMeasure.create({ data });
@@ -29,6 +32,7 @@ uomRouter.post(
 
 uomRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = uomSchema.partial().parse(req.body);
     const uom = await prisma.unitOfMeasure.update({ where: { id: req.params.id }, data });
@@ -38,6 +42,7 @@ uomRouter.put(
 
 uomRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.unitOfMeasure.delete({ where: { id: req.params.id } });
     res.status(204).end();
@@ -62,6 +67,7 @@ uomRouter.get(
 
 uomRouter.post(
   "/conversions",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = conversionSchema.parse(req.body);
     const conversion = await prisma.uomConversion.create({ data });
@@ -71,6 +77,7 @@ uomRouter.post(
 
 uomRouter.delete(
   "/conversions/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.uomConversion.delete({ where: { id: req.params.id } });
     res.status(204).end();

@@ -5,8 +5,10 @@ import { asyncHandler } from "../../lib/asyncHandler";
 import { ApiError } from "../../lib/errors";
 import { computeDurationHours, computeEndDate, rangesOverlap } from "../../lib/capacity";
 import { checkMaterialAvailability } from "../production/productionOrders.service";
+import { allowRoles } from "../../middleware/roles";
 
 export const planningRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 /**
  * Vue Gantt: renvoie tous les ordres de fabrication planifiés/en cours avec
@@ -98,6 +100,7 @@ const rescheduleSchema = z.object({
 // recalcule automatiquement sa date de fin prévisionnelle.
 planningRouter.patch(
   "/ordres/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = rescheduleSchema.parse(req.body);
     const order = await prisma.productionOrder.findUniqueOrThrow({

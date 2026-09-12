@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const articlesRouter = Router();
+const canWrite = allowRoles("COMMERCIAL", "PRODUCTION");
 
 const articleSchema = z.object({
   code: z.string().min(1),
@@ -63,6 +65,7 @@ articlesRouter.get(
 
 articlesRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = articleSchema.parse(req.body);
     const article = await prisma.article.create({ data });
@@ -72,6 +75,7 @@ articlesRouter.post(
 
 articlesRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = articleSchema.partial().parse(req.body);
     const article = await prisma.article.update({ where: { id: req.params.id }, data });
@@ -81,6 +85,7 @@ articlesRouter.put(
 
 articlesRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.article.update({ where: { id: req.params.id }, data: { isActive: false } });
     res.status(204).end();

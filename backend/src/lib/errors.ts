@@ -23,4 +23,8 @@ export class ApiError extends Error {
   static unauthorized(message = "Non authentifié") {
     return new ApiError(401, message);
   }
+
+  static forbidden(message = "Action non autorisée pour votre rôle") {
+    return new ApiError(403, message);
+  }
 }

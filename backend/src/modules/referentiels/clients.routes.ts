@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const clientsRouter = Router();
+const canWrite = allowRoles("COMMERCIAL");
 
 const clientSchema = z.object({
   code: z.string().min(1),
@@ -56,6 +58,7 @@ clientsRouter.get(
 
 clientsRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = clientSchema.parse(req.body);
     const client = await prisma.client.create({ data });
@@ -65,6 +68,7 @@ clientsRouter.post(
 
 clientsRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = clientSchema.partial().parse(req.body);
     const client = await prisma.client.update({ where: { id: req.params.id }, data });
@@ -74,6 +78,7 @@ clientsRouter.put(
 
 clientsRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.client.update({ where: { id: req.params.id }, data: { isActive: false } });
     res.status(204).end();

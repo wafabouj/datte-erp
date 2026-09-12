@@ -6,8 +6,10 @@ import { ApiError } from "../../lib/errors";
 import { nextSalesOrderNumber } from "../../lib/numbering";
 import { assertTransitionAllowed, checkAvailability, shipOrder } from "./salesOrders.service";
 import { drawHeader, drawTable, renderPdf } from "../../lib/pdf";
+import { allowRoles } from "../../middleware/roles";
 
 export const salesOrdersRouter = Router();
+const canWrite = allowRoles("COMMERCIAL");
 
 const lineSchema = z.object({
   articleId: z.string(),
@@ -63,6 +65,7 @@ salesOrdersRouter.get(
 
 salesOrdersRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = orderSchema.parse(req.body);
     const number = await nextSalesOrderNumber();
@@ -93,6 +96,7 @@ salesOrdersRouter.post(
 
 salesOrdersRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const existing = await prisma.salesOrder.findUniqueOrThrow({ where: { id: req.params.id } });
     if (existing.status !== "DRAFT") {
@@ -141,6 +145,7 @@ const statusSchema = z.object({ status: z.enum([
 
 salesOrdersRouter.post(
   "/:id/statut",
+  canWrite,
   asyncHandler(async (req, res) => {
     const { status } = statusSchema.parse(req.body);
     const order = await prisma.salesOrder.findUniqueOrThrow({ where: { id: req.params.id } });

@@ -13,6 +13,7 @@ import { workCentersRouter } from "./modules/planification/workCenters.routes";
 import { workersRouter } from "./modules/planification/workers.routes";
 import { planningRouter } from "./modules/planification/planning.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
+import { usersRouter } from "./modules/utilisateurs/users.routes";
 
 export const app = express();
 
@@ -34,5 +35,6 @@ app.use("/api/planification/postes", requireAuth, workCentersRouter);
 app.use("/api/planification/ouvriers", requireAuth, workersRouter);
 app.use("/api/planification/planning", requireAuth, planningRouter);
 app.use("/api/dashboard", requireAuth, dashboardRouter);
+app.use("/api/utilisateurs", requireAuth, usersRouter);
 
 app.use(errorHandler);

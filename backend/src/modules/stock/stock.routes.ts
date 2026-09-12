@@ -4,8 +4,10 @@ import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
 import { recordStockMovement } from "./stock.service";
 import { nextLotCode } from "../../lib/numbering";
+import { allowRoles } from "../../middleware/roles";
 
 export const stockRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 stockRouter.get(
   "/niveaux",
@@ -101,6 +103,7 @@ const receptionSchema = z.object({
 // Réception de matière première / emballage: crée un lot de traçabilité amont
 stockRouter.post(
   "/receptions",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = receptionSchema.parse(req.body);
     const article = await prisma.article.findUniqueOrThrow({ where: { id: data.articleId } });
@@ -144,6 +147,7 @@ const adjustmentSchema = z.object({
 
 stockRouter.post(
   "/ajustements",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = adjustmentSchema.parse(req.body);
     const result = await prisma.$transaction((tx) =>

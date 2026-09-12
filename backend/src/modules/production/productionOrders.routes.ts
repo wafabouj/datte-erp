@@ -11,8 +11,10 @@ import {
   planProductionOrder,
 } from "./productionOrders.service";
 import { ApiError } from "../../lib/errors";
+import { allowRoles } from "../../middleware/roles";
 
 export const productionOrdersRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 const createSchema = z.object({
   bomId: z.string(),
@@ -66,6 +68,7 @@ productionOrdersRouter.get(
 
 productionOrdersRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = createSchema.parse(req.body);
     const { requiredComponents, durationHours, plannedEndDate } = await planProductionOrder({
@@ -112,6 +115,7 @@ const statusSchema = z.object({
 
 productionOrdersRouter.post(
   "/:id/statut",
+  canWrite,
   asyncHandler(async (req, res) => {
     const { status, quantityProduced } = statusSchema.parse(req.body);
     const order = await prisma.productionOrder.findUniqueOrThrow({ where: { id: req.params.id } });

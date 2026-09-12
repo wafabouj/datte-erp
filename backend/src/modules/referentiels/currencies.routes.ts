@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const currenciesRouter = Router();
+const canWrite = allowRoles("COMPTABILITE");
 
 const currencySchema = z.object({
   code: z.string().min(3).max(3).toUpperCase(),
@@ -25,6 +27,7 @@ currenciesRouter.get(
 
 currenciesRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = currencySchema.parse(req.body);
     const currency = await prisma.currency.create({ data });
@@ -34,6 +37,7 @@ currenciesRouter.post(
 
 currenciesRouter.put(
   "/:code",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = currencySchema.partial().parse(req.body);
     const currency = await prisma.currency.update({
@@ -51,6 +55,7 @@ const rateSchema = z.object({
 
 currenciesRouter.post(
   "/:code/rates",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = rateSchema.parse(req.body);
     const rate = await prisma.exchangeRate.create({

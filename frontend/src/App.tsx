@@ -21,6 +21,7 @@ import { ProductionOrders } from "./pages/production/ProductionOrders";
 import { ProductionOrderDetail } from "./pages/production/ProductionOrderDetail";
 import { Planning } from "./pages/production/Planning";
 import { WorkCentersAndWorkers } from "./pages/production/WorkCentersAndWorkers";
+import { Users } from "./pages/administration/Users";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 10_000 } },
@@ -29,6 +30,12 @@ const queryClient = new QueryClient({
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function RequireAdmin({ children }: { children: React.ReactElement }) {
+  const { user } = useAuth();
+  if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
   return children;
 }
 
@@ -65,6 +72,14 @@ export default function App() {
               <Route path="production/ordres/:id" element={<ProductionOrderDetail />} />
               <Route path="production/planning" element={<Planning />} />
               <Route path="production/postes" element={<WorkCentersAndWorkers />} />
+              <Route
+                path="administration/utilisateurs"
+                element={
+                  <RequireAdmin>
+                    <Users />
+                  </RequireAdmin>
+                }
+              />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

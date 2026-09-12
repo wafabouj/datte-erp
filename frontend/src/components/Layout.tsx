@@ -39,8 +39,14 @@ const NAV = [
   },
 ];
 
+const ADMIN_NAV = {
+  section: "Administration",
+  links: [{ to: "/administration/utilisateurs", label: "Utilisateurs" }],
+};
+
 export function Layout() {
   const { user, logout } = useAuth();
+  const nav = user?.role === "ADMIN" ? [...NAV, ADMIN_NAV] : NAV;
 
   return (
     <div className="app-shell">
@@ -49,7 +55,7 @@ export function Layout() {
           Dattes Export ERP
           <small>mini-ERP interne</small>
         </div>
-        {NAV.map((group) => (
+        {nav.map((group) => (
           <div key={group.section}>
             <div className="sidebar__section">{group.section}</div>
             {group.links.map((link) => (

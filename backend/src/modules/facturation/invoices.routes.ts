@@ -7,8 +7,10 @@ import { ApiError } from "../../lib/errors";
 import { nextInvoiceNumber } from "../../lib/numbering";
 import { amountPaid, effectiveStatus } from "./invoices.service";
 import { drawHeader, drawTable, renderPdf } from "../../lib/pdf";
+import { allowRoles } from "../../middleware/roles";
 
 export const invoicesRouter = Router();
+const canWrite = allowRoles("COMPTABILITE");
 
 function withEffectiveStatus<T extends Parameters<typeof effectiveStatus>[0]>(invoice: T) {
   return { ...invoice, effectiveStatus: effectiveStatus(invoice) };
@@ -62,6 +64,7 @@ const generateSchema = z.object({
 // Génère une facture (totale ou partielle) à partir des lignes d'une commande
 invoicesRouter.post(
   "/depuis-commande/:orderId",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = generateSchema.parse(req.body);
     const order = await prisma.salesOrder.findUniqueOrThrow({
@@ -135,6 +138,7 @@ const creditNoteSchema = z.object({
 
 invoicesRouter.post(
   "/avoirs",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = creditNoteSchema.parse(req.body);
     const original = await prisma.invoice.findUniqueOrThrow({ where: { id: data.invoiceId } });
@@ -179,6 +183,7 @@ const paymentSchema = z.object({
 
 invoicesRouter.post(
   "/:id/paiements",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = paymentSchema.parse(req.body);
     const invoice = await prisma.invoice.findUniqueOrThrow({
@@ -213,6 +218,7 @@ invoicesRouter.post(
 
 invoicesRouter.post(
   "/:id/annuler",
+  canWrite,
   asyncHandler(async (req, res) => {
     const invoice = await prisma.invoice.findUniqueOrThrow({
       where: { id: req.params.id },

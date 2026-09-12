@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const workersRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 const workerSchema = z.object({
   name: z.string().min(1),
@@ -25,6 +27,7 @@ workersRouter.get(
 
 workersRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = workerSchema.parse(req.body);
     const worker = await prisma.worker.create({ data });
@@ -34,6 +37,7 @@ workersRouter.post(
 
 workersRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = workerSchema.partial().parse(req.body);
     const worker = await prisma.worker.update({ where: { id: req.params.id }, data });
@@ -43,6 +47,7 @@ workersRouter.put(
 
 workersRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.worker.update({ where: { id: req.params.id }, data: { isActive: false } });
     res.status(204).end();

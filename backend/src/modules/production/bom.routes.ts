@@ -2,8 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma";
 import { asyncHandler } from "../../lib/asyncHandler";
+import { allowRoles } from "../../middleware/roles";
 
 export const bomRouter = Router();
+const canWrite = allowRoles("PRODUCTION");
 
 const componentSchema = z.object({
   articleId: z.string(),
@@ -41,6 +43,7 @@ bomRouter.get(
 
 bomRouter.post(
   "/",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = bomSchema.parse(req.body);
     const bom = await prisma.billOfMaterial.create({
@@ -58,6 +61,7 @@ bomRouter.post(
 
 bomRouter.put(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     const data = bomSchema.parse(req.body);
     const bom = await prisma.$transaction(async (tx) => {
@@ -79,6 +83,7 @@ bomRouter.put(
 
 bomRouter.delete(
   "/:id",
+  canWrite,
   asyncHandler(async (req, res) => {
     await prisma.billOfMaterial.update({ where: { id: req.params.id }, data: { isActive: false } });
     res.status(204).end();
