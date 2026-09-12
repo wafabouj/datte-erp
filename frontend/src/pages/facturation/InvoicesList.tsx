@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { Invoice } from "../../api/types";
-import { StatusBadge } from "../../components/StatusBadge";
+import { StatusBadge, STATUS_LABELS } from "../../components/StatusBadge";
 import { formatDate, formatMoney } from "../../lib/format";
+import { exportToCsv } from "../../lib/csv";
 
 interface Receivables {
   totalOutstanding: number;
@@ -34,10 +35,46 @@ export function InvoicesList() {
     queryFn: async () => (await api.get("/factures/dashboard/creances")).data,
   });
 
+  function handleExport() {
+    if (tab === "factures") {
+      exportToCsv(
+        "factures",
+        ["N°", "Type", "Client", "Émission", "Échéance", "Statut", "Devise", "Total"],
+        invoices.map((inv) => [
+          inv.number,
+          inv.type === "INVOICE" ? "Facture" : "Avoir",
+          inv.client?.name ?? "",
+          formatDate(inv.issueDate),
+          formatDate(inv.dueDate),
+          STATUS_LABELS[inv.effectiveStatus ?? inv.status] ?? inv.status,
+          inv.currencyCode,
+          inv.totalAmount,
+        ])
+      );
+    } else {
+      exportToCsv(
+        "creances",
+        ["N° Facture", "Client", "Échéance", "Statut", "Devise", "Solde dû", "Jours de retard"],
+        (receivables?.outstandingInvoices ?? []).map((inv) => [
+          inv.number,
+          inv.clientName,
+          formatDate(inv.dueDate),
+          STATUS_LABELS[inv.status] ?? inv.status,
+          inv.currencyCode,
+          inv.balance,
+          inv.daysOverdue > 0 ? inv.daysOverdue : 0,
+        ])
+      );
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
         <h1>Facturation</h1>
+        <button className="btn btn-secondary" onClick={handleExport}>
+          Exporter Excel
+        </button>
       </div>
 
       <div className="tabs">

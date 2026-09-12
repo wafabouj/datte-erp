@@ -4,6 +4,7 @@ import { api, apiErrorMessage } from "../../api/client";
 import { Article, StockLevel, Supplier, Warehouse } from "../../api/types";
 import { Modal } from "../../components/Modal";
 import { formatQty } from "../../lib/format";
+import { exportToCsv } from "../../lib/csv";
 
 const ARTICLE_TYPE_LABELS: Record<string, string> = {
   RAW_MATERIAL: "Matière première",
@@ -59,11 +60,29 @@ export function StockLevels() {
     onError: (err) => setError(apiErrorMessage(err)),
   });
 
+  function handleExport() {
+    exportToCsv(
+      "stock",
+      ["Article", "Type", "Entrepôt", "Lot", "Quantité", "UdM"],
+      levels.map((l) => [
+        l.article.name,
+        ARTICLE_TYPE_LABELS[l.article.type],
+        l.warehouse.name,
+        l.lot?.code ?? "",
+        l.quantity,
+        l.article.uom?.code ?? "",
+      ])
+    );
+  }
+
   return (
     <div>
       <div className="page-header">
         <h1>Niveaux de stock</h1>
         <div className="flex-row">
+          <button className="btn btn-secondary" onClick={handleExport}>
+            Exporter Excel
+          </button>
           <button
             className="btn btn-secondary"
             onClick={() => {

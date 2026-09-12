@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiErrorMessage } from "../../api/client";
 import { Client, Currency } from "../../api/types";
 import { Modal } from "../../components/Modal";
+import { exportToCsv } from "../../lib/csv";
 
 const emptyForm = {
   code: "",
@@ -70,13 +71,37 @@ export function Clients() {
     setShowForm(true);
   }
 
+  function handleExport() {
+    exportToCsv(
+      "clients",
+      ["Code", "Nom", "Pays", "Adresse", "Contact", "Email", "Téléphone", "Devise", "Délai paiement (j)", "Incoterm"],
+      clients.map((c) => [
+        c.code,
+        c.name,
+        c.country,
+        c.address ?? "",
+        c.contactName ?? "",
+        c.contactEmail ?? "",
+        c.contactPhone ?? "",
+        c.currencyCode,
+        c.paymentTermsDays,
+        c.defaultIncoterm ?? "",
+      ])
+    );
+  }
+
   return (
     <div>
       <div className="page-header">
         <h1>Clients</h1>
-        <button className="btn" onClick={openCreate}>
-          + Nouveau client
-        </button>
+        <div className="flex-row">
+          <button className="btn btn-secondary" onClick={handleExport}>
+            Exporter Excel
+          </button>
+          <button className="btn" onClick={openCreate}>
+            + Nouveau client
+          </button>
+        </div>
       </div>
 
       <div className="card" style={{ padding: 0 }}>

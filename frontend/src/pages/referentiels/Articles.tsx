@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiErrorMessage } from "../../api/client";
 import { Article, ArticleType, Currency, UnitOfMeasure } from "../../api/types";
 import { Modal } from "../../components/Modal";
+import { exportToCsv } from "../../lib/csv";
 
 const emptyForm = {
   code: "",
@@ -82,6 +83,26 @@ export function Articles() {
     setShowForm(true);
   }
 
+  function handleExport() {
+    exportToCsv(
+      "articles",
+      ["Code", "Nom", "Type", "Variété", "Calibre", "Conditionnement", "UdM", "Stock min", "Coût unitaire", "Prix vente", "Devise"],
+      articles.map((a) => [
+        a.code,
+        a.name,
+        TYPE_LABELS[a.type],
+        a.variety ?? "",
+        a.caliber ?? "",
+        a.packaging ?? "",
+        a.uom?.code ?? "",
+        a.minStock,
+        a.unitCost,
+        a.unitPrice,
+        a.currencyCode,
+      ])
+    );
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -95,6 +116,9 @@ export function Articles() {
               </option>
             ))}
           </select>
+          <button className="btn btn-secondary" onClick={handleExport}>
+            Exporter Excel
+          </button>
           <button className="btn" onClick={openCreate}>
             + Nouvel article
           </button>

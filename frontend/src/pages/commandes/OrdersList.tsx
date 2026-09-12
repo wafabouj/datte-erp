@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { api, apiErrorMessage } from "../../api/client";
 import { Article, Client, SalesOrder, Warehouse } from "../../api/types";
 import { Modal } from "../../components/Modal";
-import { StatusBadge } from "../../components/StatusBadge";
+import { StatusBadge, STATUS_LABELS } from "../../components/StatusBadge";
 import { formatDate, formatMoney } from "../../lib/format";
+import { exportToCsv } from "../../lib/csv";
 
 interface LineForm {
   articleId: string;
@@ -77,13 +78,34 @@ export function OrdersList() {
 
   const total = lines.reduce((s, l) => s + l.quantity * l.unitPrice, 0);
 
+  function handleExport() {
+    exportToCsv(
+      "commandes",
+      ["N°", "Client", "Date", "Statut", "Incoterm", "Devise", "Total"],
+      orders.map((o) => [
+        o.number,
+        o.client?.name ?? "",
+        formatDate(o.orderDate),
+        STATUS_LABELS[o.status] ?? o.status,
+        o.incoterm ?? "",
+        o.currencyCode,
+        o.lines.reduce((s, l) => s + Number(l.lineTotal), 0),
+      ])
+    );
+  }
+
   return (
     <div>
       <div className="page-header">
         <h1>Commandes clients</h1>
-        <button className="btn" onClick={openCreate}>
-          + Nouvelle commande
-        </button>
+        <div className="flex-row">
+          <button className="btn btn-secondary" onClick={handleExport}>
+            Exporter Excel
+          </button>
+          <button className="btn" onClick={openCreate}>
+            + Nouvelle commande
+          </button>
+        </div>
       </div>
 
       <div className="card" style={{ padding: 0 }}>

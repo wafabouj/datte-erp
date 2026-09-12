@@ -15,7 +15,7 @@ const COLORS: Record<string, string> = {
   DONE: "green",
 };
 
-const LABELS: Record<string, string> = {
+export const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Brouillon",
   CONFIRMED: "Confirmée",
   IN_PREPARATION: "En préparation",
@@ -34,5 +34,5 @@ const LABELS: Record<string, string> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const color = COLORS[status] ?? "gray";
-  return <span className={`badge badge-${color}`}>{LABELS[status] ?? status}</span>;
+  return <span className={`badge badge-${color}`}>{STATUS_LABELS[status] ?? status}</span>;
 }
