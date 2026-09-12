@@ -83,9 +83,12 @@ async function main() {
 
   console.log("Amorçage: compte administrateur...");
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  // update inclut le mot de passe: relancer ce script (ex. à chaque déploiement)
+  // avec un nouvel ADMIN_PASSWORD est la façon prévue de réinitialiser l'accès,
+  // tant qu'il n'y a pas d'écran "changer mon mot de passe" dans l'application.
   await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
-    update: {},
+    update: { passwordHash, name: ADMIN_NAME },
     create: { email: ADMIN_EMAIL, passwordHash, name: ADMIN_NAME, role: "ADMIN" },
   });
 
