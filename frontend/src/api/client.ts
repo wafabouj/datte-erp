@@ -1,6 +1,11 @@
 import axios from "axios";
 
-export const api = axios.create({ baseURL: "/api" });
+// En local, le proxy Vite redirige "/api" vers le backend (voir vite.config.ts).
+// En production, le frontend et le backend sont déployés séparément : VITE_API_URL
+// doit pointer vers l'URL publique du backend (ex: https://mon-backend.onrender.com/api).
+const baseURL = import.meta.env.VITE_API_URL || "/api";
+
+export const api = axios.create({ baseURL });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("erp_token");
