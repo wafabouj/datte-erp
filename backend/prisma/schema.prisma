@@ -139,23 +139,36 @@ enum ArticleType {
   FINISHED_PRODUCT // produit fini vendable
 }
 
+enum ArticleProcess {
+  WITH_PIT // avec noyaux
+  PITTED // dénoyauté
+}
+
+enum ArticleTreatment {
+  BRANCH // branché (dattes sur branche)
+  STANDARD
+  PACKAGED // conditionné
+}
+
 model Article {
-  id           String        @id @default(cuid())
-  code         String        @unique
+  id           String            @id @default(cuid())
+  code         String            @unique
   name         String
   type         ArticleType
-  variety      String? // Deglet Nour, Mejhoul...
+  variety      String? // Deglet Nour, Khouet Allig, Allig, Mejhoul...
+  process      ArticleProcess?
+  treatment    ArticleTreatment?
   caliber      String? // calibre
   packaging    String? // "Carton 5kg", "Vrac", ...
   uomId        String
-  uom          UnitOfMeasure @relation(fields: [uomId], references: [id])
-  minStock     Decimal       @default(0) @db.Decimal(18, 3)
-  unitCost     Decimal       @default(0) @db.Decimal(18, 4)
-  unitPrice    Decimal       @default(0) @db.Decimal(18, 4)
+  uom          UnitOfMeasure     @relation(fields: [uomId], references: [id])
+  minStock     Decimal           @default(0) @db.Decimal(18, 3)
+  unitCost     Decimal           @default(0) @db.Decimal(18, 4)
+  unitPrice    Decimal           @default(0) @db.Decimal(18, 4)
   currencyCode String
-  currency     Currency      @relation(fields: [currencyCode], references: [code])
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
+  currency     Currency          @relation(fields: [currencyCode], references: [code])
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
 
   stockLevels      StockLevel[]
   stockMovements   StockMovement[]

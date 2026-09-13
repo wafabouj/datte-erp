@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiErrorMessage } from "../../api/client";
-import { Article, ArticleType, Currency, UnitOfMeasure } from "../../api/types";
+import { Article, ArticleProcess, ArticleTreatment, ArticleType, Currency, UnitOfMeasure } from "../../api/types";
 import { Modal } from "../../components/Modal";
 import { exportToCsv } from "../../lib/csv";
 
@@ -10,6 +10,8 @@ const emptyForm = {
   name: "",
   type: "FINISHED_PRODUCT" as ArticleType,
   variety: "",
+  process: "" as ArticleProcess | "",
+  treatment: "" as ArticleTreatment | "",
   caliber: "",
   packaging: "",
   uomId: "",
@@ -24,6 +26,19 @@ const TYPE_LABELS: Record<ArticleType, string> = {
   PACKAGING: "Emballage",
   FINISHED_PRODUCT: "Produit fini",
 };
+
+const PROCESS_LABELS: Record<ArticleProcess, string> = {
+  WITH_PIT: "Avec noyaux",
+  PITTED: "Dénoyauté",
+};
+
+const TREATMENT_LABELS: Record<ArticleTreatment, string> = {
+  BRANCH: "Branché",
+  STANDARD: "Standard",
+  PACKAGED: "Conditionné",
+};
+
+const VARIETY_SUGGESTIONS = ["Deglet Nour", "Khouet Allig", "Allig", "Mejhoul"];
 
 export function Articles() {
   const qc = useQueryClient();
@@ -71,6 +86,8 @@ export function Articles() {
       name: a.name,
       type: a.type,
       variety: a.variety ?? "",
+      process: a.process ?? "",
+      treatment: a.treatment ?? "",
       caliber: a.caliber ?? "",
       packaging: a.packaging ?? "",
       uomId: a.uomId,
@@ -86,12 +103,28 @@ export function Articles() {
   function handleExport() {
     exportToCsv(
       "articles",
-      ["Code", "Nom", "Type", "Variété", "Calibre", "Conditionnement", "UdM", "Stock min", "Coût unitaire", "Prix vente", "Devise"],
+      [
+        "Code",
+        "Nom",
+        "Type",
+        "Variété",
+        "Process",
+        "Traitement",
+        "Calibre",
+        "Conditionnement",
+        "UdM",
+        "Stock min",
+        "Coût unitaire",
+        "Prix vente",
+        "Devise",
+      ],
       articles.map((a) => [
         a.code,
         a.name,
         TYPE_LABELS[a.type],
         a.variety ?? "",
+        a.process ? PROCESS_LABELS[a.process] : "",
+        a.treatment ? TREATMENT_LABELS[a.treatment] : "",
         a.caliber ?? "",
         a.packaging ?? "",
         a.uom?.code ?? "",
@@ -133,6 +166,8 @@ export function Articles() {
               <th>Nom</th>
               <th>Type</th>
               <th>Variété</th>
+              <th>Process</th>
+              <th>Traitement</th>
               <th>Conditionnement</th>
               <th>UdM</th>
               <th className="text-right">PU vente</th>
@@ -146,6 +181,8 @@ export function Articles() {
                 <td>{a.name}</td>
                 <td>{TYPE_LABELS[a.type]}</td>
                 <td>{a.variety ?? "-"}</td>
+                <td>{a.process ? PROCESS_LABELS[a.process] : "-"}</td>
+                <td>{a.treatment ? TREATMENT_LABELS[a.treatment] : "-"}</td>
                 <td>{a.packaging ?? "-"}</td>
                 <td>{a.uom?.code}</td>
                 <td className="text-right">
@@ -160,7 +197,7 @@ export function Articles() {
             ))}
             {articles.length === 0 && (
               <tr>
-                <td colSpan={8} className="empty-state">
+                <td colSpan={10} className="empty-state">
                   Aucun article.
                 </td>
               </tr>
@@ -198,7 +235,45 @@ export function Articles() {
               </div>
               <div className="field">
                 <label>Variété</label>
-                <input value={form.variety} onChange={(e) => setForm({ ...form, variety: e.target.value })} />
+                <input
+                  list="variety-suggestions"
+                  value={form.variety}
+                  onChange={(e) => setForm({ ...form, variety: e.target.value })}
+                  placeholder="Deglet Nour, Khouet Allig, Allig..."
+                />
+                <datalist id="variety-suggestions">
+                  {VARIETY_SUGGESTIONS.map((v) => (
+                    <option key={v} value={v} />
+                  ))}
+                </datalist>
+              </div>
+              <div className="field">
+                <label>Process</label>
+                <select
+                  value={form.process}
+                  onChange={(e) => setForm({ ...form, process: e.target.value as ArticleProcess | "" })}
+                >
+                  <option value="">-</option>
+                  {Object.entries(PROCESS_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Traitement</label>
+                <select
+                  value={form.treatment}
+                  onChange={(e) => setForm({ ...form, treatment: e.target.value as ArticleTreatment | "" })}
+                >
+                  <option value="">-</option>
+                  {Object.entries(TREATMENT_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="field">
                 <label>Calibre</label>

@@ -7,11 +7,16 @@ import { allowRoles } from "../../middleware/roles";
 export const articlesRouter = Router();
 const canWrite = allowRoles("COMMERCIAL", "PRODUCTION");
 
+const emptyToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
+
 const articleSchema = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
   type: z.enum(["RAW_MATERIAL", "PACKAGING", "FINISHED_PRODUCT"]),
   variety: z.string().optional(),
+  process: emptyToUndefined(z.enum(["WITH_PIT", "PITTED"])),
+  treatment: emptyToUndefined(z.enum(["BRANCH", "STANDARD", "PACKAGED"])),
   caliber: z.string().optional(),
   packaging: z.string().optional(),
   uomId: z.string(),

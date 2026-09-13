@@ -57,6 +57,8 @@ export interface Supplier {
 }
 
 export type ArticleType = "RAW_MATERIAL" | "PACKAGING" | "FINISHED_PRODUCT";
+export type ArticleProcess = "WITH_PIT" | "PITTED";
+export type ArticleTreatment = "BRANCH" | "STANDARD" | "PACKAGED";
 
 export interface Article {
   id: string;
@@ -64,6 +66,8 @@ export interface Article {
   name: string;
   type: ArticleType;
   variety?: string | null;
+  process?: ArticleProcess | null;
+  treatment?: ArticleTreatment | null;
   caliber?: string | null;
   packaging?: string | null;
   uomId: string;
